@@ -198,3 +198,20 @@ class MaasHelper:
                 return file.readline().strip()
         except OSError:
             return None
+
+    @staticmethod
+    def enable_tls(key: str, cert: str) -> None:
+        """Enable TLS in MAAS.
+        
+        Args:
+            key (str): SSL Key in PEM format.
+            cert (str): SSL Certificate in PEM format.
+        """
+        cmd = [
+            "/snap/bin/maas",
+            "coonfig-tls",
+            "enable",
+            key,
+            cert,
+        ]
+        subprocess.check_call(cmd)

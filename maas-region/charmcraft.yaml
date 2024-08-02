@@ -90,6 +90,18 @@ actions:
     description: List charmed MAAS controllers
   get-api-endpoint:
     description: Get MAAS API URL
+  enable-tls:
+    description: Enable TLS for the MAAS region.
+    params:
+      key:
+        type: string
+        description: PEM formatted SSL key
+      cert:
+        type: string
+        description: PEM formatted SSL certificate
+    required:
+      - key
+      - cert
 
 parts:
   charm:

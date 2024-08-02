@@ -107,6 +107,7 @@ class MaasRegionCharm(ops.CharmBase):
         self.framework.observe(self.on.get_api_key_action, self._on_get_api_key_action)
         self.framework.observe(self.on.list_controllers_action, self._on_list_controllers_action)
         self.framework.observe(self.on.get_api_endpoint_action, self._on_get_api_endpoint_action)
+        self.framework.observe(self.on.enable_tls_action, self._on_enable_tls_action)
 
     @property
     def peers(self) -> Union[ops.Relation, None]:
@@ -408,6 +409,13 @@ class MaasRegionCharm(ops.CharmBase):
             event.set_results({"api-url": url})
         else:
             event.fail("MAAS is not initialized yet")
+
+    def _on_enable_tls_action(self, event: ops.ActionEvent):
+        try:
+            MaasHelper.enable_tls(event.params["key"], event.params["cert"])
+        except Exception as e:
+            logger.info(e)
+            event.fail(f"Failed to enable TLS: {e}")
 
 
 if __name__ == "__main__":  # pragma: nocover
