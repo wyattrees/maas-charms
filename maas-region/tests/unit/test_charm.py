@@ -65,6 +65,11 @@ class TestDBRelation(unittest.TestCase):
         self.harness.set_leader(True)
         self.harness.begin()
         db_rel = self.harness.add_relation(MAAS_DB_NAME, "postgresql")
+
+        self.harness.add_relation(MAAS_PEER_NAME, self.harness.charm.app.name)
+        self.harness.charm.set_peer_data(
+            self.harness.charm.app, "maas_url", f"http://10.0.0.10:{MAAS_HTTP_PORT}/MAAS"
+        )
         self.harness.update_relation_data(
             db_rel,
             "postgresql",
@@ -176,6 +181,10 @@ class TestClusterUpdates(unittest.TestCase):
         mock_helper.get_maas_secret.return_value = "very-secret"
         self.harness.set_leader(True)
         self.harness.begin()
+        self.harness.add_relation(MAAS_PEER_NAME, self.harness.charm.app.name)
+        self.harness.charm.set_peer_data(
+            self.harness.charm.app, "maas_url", f"http://proxy.maas:{MAAS_PROXY_PORT}/MAAS"
+        )
         self.harness.add_relation(
             MAAS_API_RELATION, "haproxy", unit_data={"public-address": "proxy.maas"}
         )
@@ -196,6 +205,10 @@ class TestClusterUpdates(unittest.TestCase):
         my_fqdn = socket.getfqdn()
         self.harness.set_leader(True)
         self.harness.begin()
+        self.harness.add_relation(MAAS_PEER_NAME, self.harness.charm.app.name)
+        self.harness.charm.set_peer_data(
+            self.harness.charm.app, "maas_url", f"http://10.0.0.10:{MAAS_HTTP_PORT}/MAAS"
+        )
         remote_app = "maas-agent"
         self.harness.add_relation(
             maas.DEFAULT_ENDPOINT_NAME,
@@ -240,6 +253,10 @@ class TestClusterUpdates(unittest.TestCase):
             unit_data={"unit": f"{remote_app}/0", "url": my_fqdn},
         )
         self.harness.begin()
+        self.harness.add_relation(MAAS_PEER_NAME, self.harness.charm.app.name)
+        self.harness.charm.set_peer_data(
+            self.harness.charm.app, "maas_url", f"http://10.0.0.10:{MAAS_HTTP_PORT}/MAAS"
+        )
         self.harness.remove_relation_unit(rel_id, f"{remote_app}/0")
         mock_helper.setup_region.assert_called_once_with(
             f"http://10.0.0.10:{MAAS_HTTP_PORT}/MAAS",
