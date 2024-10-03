@@ -9,6 +9,7 @@ import logging
 import socket
 import subprocess
 from typing import Any, List, Union
+from urllib.parse import urlparse
 
 import ops
 import yaml
@@ -276,7 +277,11 @@ class MaasRegionCharm(ops.CharmBase):
                     eps += [addr]
         return list(set(eps))
 
-    def _update_ha_proxy(self) -> None:
+    def _update_ha_proxy(self, maas_url: str | None = None) -> None:
+        if not maas_url:
+            bind_address = self.bind_address
+        else:
+            bind_address = urlparse(maas_url).hostname
         if relation := self.model.get_relation(MAAS_API_RELATION):
             app_name = f"api-{self.app.name}"
             data = [
@@ -288,7 +293,7 @@ class MaasRegionCharm(ops.CharmBase):
                     "servers": [
                         (
                             f"{app_name}-{self.unit.name.replace('/', '-')}",
-                            self.bind_address,
+                            bind_address,
                             MAAS_HTTP_PORT,
                             [],
                         )
@@ -304,7 +309,7 @@ class MaasRegionCharm(ops.CharmBase):
                         "servers": [
                             (
                                 f"{app_name}-{self.unit.name.replace('/', '-')}",
-                                self.bind_address,
+                                bind_address,
                                 MAAS_HTTP_PORT,
                                 [],
                             )
@@ -369,6 +374,7 @@ class MaasRegionCharm(ops.CharmBase):
         if self.get_peer_data(self.app, "maas_url") != maas_url:
             self.set_peer_data(self.app, "maas_url", maas_url)
             self._initialize_maas()
+            self._update_ha_proxy(maas_url)
 
     def _on_maasdb_created(self, event: db.DatabaseCreatedEvent) -> None:
         """Database is ready.
